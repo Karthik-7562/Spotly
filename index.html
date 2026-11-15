@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spotly — Report it. Track it. Fix it.</title>
+<style>
+:root{--blue:#315efb;--ink:#17212b;--muted:#64748b;--line:#e2e8f0;--bg:#f5f7fb}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:18px max(22px,calc((100% - 1080px)/2));display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:24px;font-weight:850;letter-spacing:-1px}.brand span{color:var(--blue)}.tag,.muted{color:var(--muted);font-size:13px}
+main{max-width:1080px;margin:34px auto;padding:0 22px}.eyebrow{color:var(--blue);font-size:12px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase}
+h1{font-size:36px;letter-spacing:-1.5px;margin:7px 0}.sub{color:var(--muted);line-height:1.55}
+.tabs{display:flex;gap:8px;margin:24px 0;flex-wrap:wrap}.tab,button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}.tab{background:#fff;color:var(--muted);border:1px solid var(--line)}.tab.active{background:#eaf0ff;color:var(--blue);border-color:#cbd8ff}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 5px 20px #17212b08}
+h2{font-size:18px;margin:0 0 5px}.hint{font-size:13px;color:var(--muted);margin:0 0 18px}
+label{display:block;font-size:13px;font-weight:700;margin:14px 0 7px}input,select,textarea{width:100%;padding:12px;border:1px solid #d7dee8;border-radius:10px;font:inherit;font-size:14px;background:white}textarea{min-height:95px;resize:vertical}
+button.primary{background:var(--blue);color:white}.full{width:100%;margin-top:17px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:18px 0}.stat{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:13px}.stat strong{font-size:24px;display:block}.stat span{font-size:11px;color:var(--muted)}
+.panel{display:none}.panel.active{display:block}.issue{border-top:1px solid var(--line);padding:14px 0}.issue:first-child{border-top:0}.issuehead{display:flex;justify-content:space-between;gap:12px}.pill{font-size:11px;font-weight:800;padding:5px 8px;border-radius:30px;background:#fff2d5;color:#946200;white-space:nowrap}.pill.done{background:#e4f7ed;color:#16845b}
+.notice{font-size:12px;color:var(--muted);line-height:1.5}.qr{width:180px;height:180px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:8px}.qrrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+footer{text-align:center;color:#94a3b8;font-size:12px;padding:32px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}h1{font-size:30px}}
+</style>
+</head>
+<body>
+<header><div class="brand">spot<span>ly</span></div><div class="tag">Report it. Track it. Fix it.</div></header>
+<main>
+<div class="eyebrow">Simple issue reporting</div>
+<h1>Make problems visible.</h1>
+<p class="sub">Scan a QR code, report an issue, and help teams spot repeat problems before they happen again.</p>
+<nav class="tabs">
+<button class="tab active" data-tab="report">Report an issue</button>
+<button class="tab" data-tab="dashboard">Issue dashboard</button>
+<button class="tab" data-tab="qr">QR codes</button>
+</nav>
+<section class="panel active" id="report">
+<div class="grid">
+<div class="card"><h2>Submit a report</h2><p class="hint">Tell the team what needs attention.</p>
+<form id="reportForm">
+<label for="location">Location or item</label><input id="location" required placeholder="e.g. Library water fountain">
+<label for="category">Problem type</label><select id="category"><option>Equipment</option><option>Cleanliness</option><option>Maintenance</option><option>Technology</option><option>Safety concern</option><option>Other</option></select>
+<label for="description">What happened?</label><textarea id="description" required placeholder="Describe the problem..."></textarea>
+<label for="reporter">Your name (optional)</label><input id="reporter" placeholder="Name">
+<button class="primary full" type="submit">Send report</button>
+</form></div>
+<div class="card"><h2>Spot recurring problems</h2><p class="hint">Reports are grouped by the same location or item.</p>
+<div class="stats"><div class="stat"><strong id="total">0</strong><span>Total reports</span></div><div class="stat"><strong id="repeat">0</strong><span>Repeat issues</span></div><div class="stat"><strong id="open">0</strong><span>Open issues</span></div></div>
+<p class="sub">This is a front-end prototype. Demo reports are saved in this browser only; they are not sent to an organization.</p></div>
+</div></section>
+<section class="panel" id="dashboard"><div class="card"><h2>Issue dashboard</h2><p class="hint">Review reports and find repeated problems.</p><div id="issues"></div></div></section>
+<section class="panel" id="qr"><div class="grid">
+<div class="card"><h2>Create an item QR code</h2><p class="hint">Make a code for a location or piece of equipment.</p>
+<label for="asset">Item or location name</label><input id="asset" placeholder="e.g. Gym scoreboard">
+<button class="primary full" id="makeQr" type="button">Generate QR code</button>
+<p class="notice">Once Spotly is published, the QR code can point visitors to your live website with the item name prefilled.</p></div>
+<div class="card"><h2>Your QR code</h2><p class="hint" id="qrLabel">No code generated yet.</p><div class="qrrow">
+<img class="qr" id="qrImage" alt="QR code preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='100%25' height='100%25' fill='%23f8fafc'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%2394a3b8' font-size='13'%3ESpotly QR%3C/text%3E%3C/svg%3E">
+<a id="downloadQr" hidden download="spotly-qr.png">Download QR image</a></div></div>
+</div></section>
+</main>
+<footer>Spotly prototype · Demo data is stored only in this browser.</footer>
+<script>
+const $=id=>document.getElementById(id);
+let reports=[];
+try{reports=JSON.parse(localStorage.getItem('spotlyReports')||'[]')}catch(e){reports=[]}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');$(b.dataset.tab).classList.add('active');render();
+}));
+$('reportForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ reports.unshift({id:Date.now(),location:$('location').value.trim(),category:$('category').value,description:$('description').value.trim(),reporter:$('reporter').value.trim()||'Anonymous',date:new Date().toLocaleString(),status:'Open'});
+ save();e.target.reset();render();alert('Your demo report was saved in this browser.');
+});
+function save(){localStorage.setItem('spotlyReports',JSON.stringify(reports))}
+function render(){
+ const counts={};reports.forEach(r=>{const k=r.location.toLowerCase();counts[k]=(counts[k]||0)+1});
+ $('total').textContent=reports.length;
+ $('repeat').textContent=Object.values(counts).filter(n=>n>1).length;
+ $('open').textContent=reports.filter(r=>r.status==='Open').length;
+ $('issues').innerHTML=reports.length?reports.map(r=>`<div class="issue"><div class="issuehead"><div><b>${esc(r.location)}</b><div class="muted">${esc(r.category)} · ${esc(r.date)} · ${esc(r.reporter)}</div></div><span class="pill ${r.status==='Resolved'?'done':''}">${r.status}</span></div><p>${esc(r.description)}</p><button class="tab" onclick="toggleStatus(${r.id})">${r.status==='Open'?'Mark resolved':'Reopen'}</button></div>`).join(''):'<p class="muted">No reports yet. Submit a report to see it here.</p>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toggleStatus(id){const r=reports.find(x=>x.id===id);if(!r)return;r.status=r.status==='Open'?'Resolved':'Open';save();render()}
+$('makeQr').addEventListener('click',()=>{
+ const asset=$('asset').value.trim();if(!asset){alert('Enter an item or location name first.');return}
+ const target=new URL(location.href);target.searchParams.set('item',asset);
+ const qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+encodeURIComponent(target.href);
+ $('qrImage').src=qrUrl;$('qrLabel').textContent='QR code for: '+asset;
+ $('downloadQr').href=qrUrl;$('downloadQr').hidden=false;
+});
+const item=new URLSearchParams(location.search).get('item');if(item){$('location').value=item}
+render();
+</script>
+</body>
+</html>
